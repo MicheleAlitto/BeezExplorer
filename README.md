@@ -61,4 +61,18 @@ Build statica: `npm run build` → `dist/`.
 
 Il nodo espone solo HTTP: servendo l'explorer in HTTPS, il browser blocca le
 chiamate dirette (mixed content). In produzione serve quindi un proxy lato hosting.
-Su Netlify, regole in `public/_redirects` (le prime due da attivare al deploy):
+
+Su Netlify si configura in `public/_redirects` con due regole di proxy verso il
+chain node più la regola SPA:
+
+```
+/api/*     http://<NODO>:5000/api/:splat     200!
+/wallet/*  http://<NODO>:5000/wallet/:splat  200!
+/*         /index.html                       200
+```
+
+L'ordine conta: Netlify applica la prima regola che fa match. Lo status `200!`
+forza il rewrite invece del redirect.
+
+`_redirects` è un file statico e non interpola variabili d'ambiente: l'indirizzo
+del nodo va scritto direttamente nel file al momento del deploy.
