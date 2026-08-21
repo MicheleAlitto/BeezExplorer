@@ -40,6 +40,19 @@ const NODES: string[] = RAW_NODES.split(",")
   .filter((s) => s.length > 0);
 const BASES: string[] = NODES.length > 0 ? NODES : [""];
 
+// --- Validazione address ------------------------------------------------------
+//
+// Gli address Beez sono "bez" + payload Base58 (alfabeto Bitcoin: niente 0 O I l).
+// Sulla chain osservati 29-31 caratteri totali (campione: 40 address da 5 blocchi,
+// 21/08/2026). Range volutamente largo perche' Base58 varia di 1-2 caratteri a
+// seconda dei byte iniziali e la derivazione lato BeezShared non e' verificata.
+//
+// Questa regex e' PIU' SEVERA del nodo, che accetta qualunque "bez" + >=2 caratteri
+// qualsiasi: verificato che passano sia `bez0OIl0OIl...` (caratteri fuori Base58)
+// sia una stringa da 39 caratteri. Serve a evitare due fetch inutili (balance +
+// activity) su input palesemente malformato.
+const BEZ_ADDRESS = /^bez[1-9A-HJ-NP-Za-km-z]{24,34}$/;
+
 /** Indice del nodo attivo: modulo-level, sopravvive ai cambi di pagina. */
 let activeNode = 0;
 
@@ -178,6 +191,8 @@ export const liveApi: ExplorerApi = {
       return block ? { kind: "block", block } : { kind: "none" };
     }
     if (query.startsWith("bez")) {
+      // Scarto senza interrogare il nodo: risparmia due fetch (balance + activity).
+      if (!BEZ_ADDRESS.test(query)) return { kind: "none" };
       const address = await this.getWalletBalance(query);
       return address ? { kind: "address", address } : { kind: "none" };
     }
