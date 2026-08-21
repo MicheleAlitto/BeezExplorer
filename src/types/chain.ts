@@ -14,6 +14,8 @@ export interface Block {
   forger: string; // dal nodo: "miner" / "miner_address"
   txCount: number;
   transactions: string[]; // hash; popolato solo dal dettaglio blocco
+  /** Tx complete con type/amount. Solo dal dettaglio blocco (live); il mock le popola da txs. */
+  txs?: Transaction[];
 }
 
 // Allineato a shared/transaction.py (fonte di verita', letto 11/08/2026).

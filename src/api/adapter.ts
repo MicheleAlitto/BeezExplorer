@@ -144,6 +144,8 @@ export function adaptBlockDetail(raw: RawBlockDetail): Block {
     forger: b.node?.miner_address ?? "",
     txCount: header.num_txs ?? txs.length,
     transactions: txs.map((t) => t.tx_hash),
+    txs: txs.map((t) => adaptTxInBlock(t, header.height ?? b.height ?? 0)),
+
   };
 }
 
